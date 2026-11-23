@@ -1,25 +1,18 @@
 import { ProductForm } from "@/components/product-form";
 import { Notice } from "@/components/notice";
-import { requireRole } from "@/lib/auth";
-import { findIndustry } from "@/lib/industries/registry";
-import { one } from "@/lib/text";
+import { apiGet } from "@/ui/api";
+import { one } from "@/ui/format";
 
 export const metadata = { title: "Neues Produkt" };
 
-export default async function NewProductPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function NewProductPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const user = await requireRole("OWNER");
-  const industry = user.tenant ? findIndustry(user.tenant.industryKey) : null;
-  if (!industry) return <p>Die Branche fehlt.</p>;
+  const form = await apiGet<{ industry: Parameters<typeof ProductForm>[0]["industry"] }>("/api/v1/inhaber/formular");
   return (
     <section className="stack">
       <h1>Neues Produkt</h1>
       <Notice hinweis={one(params.hinweis)} art={one(params.art)} />
-      <ProductForm industry={industry} />
+      <ProductForm industry={form.industry} />
     </section>
   );
 }

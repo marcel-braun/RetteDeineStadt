@@ -1,45 +1,30 @@
 import { Notice } from "@/components/notice";
-import { saveGrants } from "@/server/owner-actions";
-import { requireRole } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { METHOD_LABEL, PRICED_METHODS } from "@/lib/fulfillment";
-import { formatEuro } from "@/lib/money";
-import { one } from "@/lib/text";
+import { apiGet } from "@/ui/api";
+import { formatEuro, one } from "@/ui/format";
 
 export const metadata = { title: "Versandwege" };
 
-export default async function ShippingGrantsPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+type Desk = { zones: { id: string; name: string; methods: { method: string; label: string; priceCents: number | null; checked: boolean }[] }[] };
+
+export default async function ShippingGrantsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const user = await requireRole("OWNER");
-  if (!user.tenant) return <p>Kein Laden.</p>;
-  const [zones, grants] = await Promise.all([
-    prisma.deliveryZone.findMany({ orderBy: { sort: "asc" }, include: { prices: true } }),
-    prisma.tenantZoneMethod.findMany({ where: { tenantId: user.tenant.id } }),
-  ]);
+  const data = await apiGet<Desk>("/api/v1/inhaber/versand");
   return (
     <section className="stack">
       <h1>Versandwege</h1>
       <Notice hinweis={one(params.hinweis)} art={one(params.art)} />
       <p>Hier gibst du frei, welche Wege der Laden in einer Zone bedient. Die Preise setzt die Verwaltung. Abholung ist immer möglich und kostenlos.</p>
-      <form className="stack" action={saveGrants}>
-        {zones.map((zone) => (
+      <form className="stack" action="/api/v1/inhaber/versand" method="post">
+        {data.zones.map((zone) => (
           <fieldset key={zone.id}>
             <legend>{zone.name}</legend>
             <div className="stack">
-              {PRICED_METHODS.map((method) => {
-                const price = zone.prices.find((item) => item.method === method);
-                const checked = grants.some((grant) => grant.zoneId === zone.id && grant.method === method);
-                return (
-                  <label className="check" key={method}>
-                    <input type="checkbox" name="grant" value={`${zone.id}:${method}`} defaultChecked={checked} />
-                    {METHOD_LABEL[method]} · {price ? formatEuro(price.priceCents) : "noch ohne Preis"}
-                  </label>
-                );
-              })}
+              {zone.methods.map((method) => (
+                <label className="check" key={method.method}>
+                  <input type="checkbox" name="grant" value={`${zone.id}:${method.method}`} defaultChecked={method.checked} />
+                  {method.label} · {method.priceCents === null ? "noch ohne Preis" : formatEuro(method.priceCents)}
+                </label>
+              ))}
             </div>
           </fieldset>
         ))}

@@ -1,0 +1,372 @@
+openapi: 3.0.3
+info:
+  title: RetteDeineStadt
+  version: "1.0.0"
+  description: |
+    HTTP-API des regionalen Marktplatzes. Web, Android und iOS nutzen dieselben Pfade.
+    Sitzung und Warenkorb laufen über Cookies. JSON-Clients senden Content-Type application/json
+    und erhalten JSON. Formulare der Weboberfläche erhalten eine Weiterleitung.
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+  - name: Katalog
+  - name: Warenkorb
+  - name: Bestellung
+  - name: Verwaltung
+  - name: Inhaber
+paths:
+  /api/v1:
+    get:
+      summary: API-Einstieg
+      responses:
+        "200":
+          description: Name und Verweis auf OpenAPI
+  /api/v1/sitzung:
+    get:
+      tags: [Auth]
+      summary: Aktuelle Sitzung und Warenkorbzahl
+      responses:
+        "200":
+          description: Gast oder angemeldeter Nutzer
+  /api/v1/auth/anmelden:
+    post:
+      tags: [Auth]
+      summary: Anmelden
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+                next: { type: string }
+      responses:
+        "200":
+          description: Sitzung gesetzt
+        "400":
+          description: Zugangsdaten stimmen nicht
+  /api/v1/auth/abmelden:
+    post:
+      tags: [Auth]
+      summary: Abmelden
+      responses:
+        "200":
+          description: Sitzung gelöscht
+  /api/v1/auth/kunde:
+    post:
+      tags: [Auth]
+      summary: Kundenkonto anlegen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          description: Konto angelegt
+  /api/v1/auth/laden:
+    post:
+      tags: [Auth]
+      summary: Laden anmelden, wartet auf Freigabe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ownerName, email, password, shopName, industryKey, openingHours, pickupAddress, story]
+              properties:
+                ownerName: { type: string }
+                email: { type: string }
+                password: { type: string }
+                shopName: { type: string }
+                industryKey: { type: string }
+                openingHours: { type: string }
+                pickupAddress: { type: string }
+                story: { type: string }
+      responses:
+        "200":
+          description: Laden angelegt, noch nicht sichtbar
+  /api/v1/entdecken:
+    get:
+      tags: [Katalog]
+      summary: Suche über Laden- und Produktnamen, Umkreis und Branchenfilter
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: km
+          schema: { type: number }
+        - in: query
+          name: lat
+          schema: { type: number }
+        - in: query
+          name: lng
+          schema: { type: number }
+        - in: query
+          name: zone
+          schema: { type: string }
+        - in: query
+          name: branche
+          schema: { type: string }
+        - in: query
+          name: f_{filter}
+          description: Filterwert, den das gewählte Branchenmodul liefert
+          schema: { type: string }
+      responses:
+        "200":
+          description: Karte, Läden und die Filter der gewählten Branche
+  /api/v1/branchen:
+    get:
+      tags: [Katalog]
+      summary: Branchen für die Registrierung
+      responses:
+        "200":
+          description: Liste der Branchenmodule
+  /api/v1/laeden/{slug}:
+    get:
+      tags: [Katalog]
+      summary: Laden mit Sortiment
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Laden
+        "404":
+          description: Nicht gefunden oder nicht freigegeben
+  /api/v1/warenkorb:
+    get:
+      tags: [Warenkorb]
+      summary: Warenkorb mit günstigstem gemeinsamem Weg
+      responses:
+        "200":
+          description: Positionen, Zone und Wege
+  /api/v1/warenkorb/hinzufuegen:
+    post:
+      tags: [Warenkorb]
+      summary: Variante in den Warenkorb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [variantId, quantity]
+              properties:
+                variantId: { type: string }
+                quantity: { type: integer }
+      responses:
+        "200":
+          description: Hinzugefügt
+  /api/v1/warenkorb/menge:
+    post:
+      tags: [Warenkorb]
+      summary: Menge setzen, 0 entfernt die Position
+      responses:
+        "200":
+          description: Menge gesetzt
+  /api/v1/warenkorb/zone:
+    post:
+      tags: [Warenkorb]
+      summary: Lieferzone wählen
+      responses:
+        "200":
+          description: Zone übernommen
+  /api/v1/bestellungen:
+    post:
+      tags: [Bestellung]
+      summary: Gast- oder Kontokauf vormerken, ohne echte Abbuchung
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [zoneId, method]
+              properties:
+                email: { type: string }
+                zoneId: { type: string }
+                method: { type: string }
+      responses:
+        "200":
+          description: Bestellung aufgenommen
+  /api/v1/bestellungen/{nummer}:
+    get:
+      tags: [Bestellung]
+      summary: Bestellung lesen
+      parameters:
+        - in: path
+          name: nummer
+          required: true
+          schema: { type: string }
+        - in: query
+          name: zugang
+          schema: { type: string }
+      responses:
+        "200":
+          description: Bestellung
+        "404":
+          description: Kein Zugriff
+  /api/v1/konto:
+    get:
+      tags: [Bestellung]
+      summary: Bestellungen des Kontos
+      responses:
+        "200":
+          description: Konto oder Gast ohne Bestellungen
+  /api/v1/verwaltung:
+    get:
+      tags: [Verwaltung]
+      summary: Warenumsatz, Provision und Auszahlung
+      responses:
+        "200":
+          description: Statistik
+        "401":
+          description: Keine Verwaltung
+  /api/v1/verwaltung/satz:
+    post:
+      tags: [Verwaltung]
+      summary: Globalen Provisionssatz setzen
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/verwaltung/mandanten:
+    get:
+      tags: [Verwaltung]
+      summary: Mandantenliste
+      responses:
+        "200":
+          description: Mandanten
+    post:
+      tags: [Verwaltung]
+      summary: Mandant anlegen
+      responses:
+        "200":
+          description: Angelegt, noch nicht freigegeben
+  /api/v1/verwaltung/mandanten/{id}:
+    get:
+      tags: [Verwaltung]
+      summary: Mandant lesen
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Mandant
+    post:
+      tags: [Verwaltung]
+      summary: Freigabe, Satz und Auszahlung speichern
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/verwaltung/versand:
+    get:
+      tags: [Verwaltung]
+      summary: Lieferzonen und Preise
+      responses:
+        "200":
+          description: Zonen
+    post:
+      tags: [Verwaltung]
+      summary: Preise speichern
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/inhaber:
+    get:
+      tags: [Inhaber]
+      summary: Ladenübersicht
+      responses:
+        "200":
+          description: Sortiment und Bestellungen
+  /api/v1/inhaber/laden:
+    get:
+      tags: [Inhaber]
+      summary: Ladenangaben
+      responses:
+        "200":
+          description: Angaben
+    post:
+      tags: [Inhaber]
+      summary: Öffnungszeiten, Abholort und Geschichte speichern
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/inhaber/versand:
+    get:
+      tags: [Inhaber]
+      summary: Freigegebene Versandwege
+      responses:
+        "200":
+          description: Wege je Zone
+    post:
+      tags: [Inhaber]
+      summary: Wege je Zone speichern
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/inhaber/formular:
+    get:
+      tags: [Inhaber]
+      summary: Produktformular mit Feldern der Branche
+      parameters:
+        - in: query
+          name: id
+          schema: { type: string }
+      responses:
+        "200":
+          description: Leeres oder bestehendes Produkt
+  /api/v1/inhaber/produkte:
+    post:
+      tags: [Inhaber]
+      summary: Produkt speichern
+      responses:
+        "200":
+          description: Gespeichert
+  /api/v1/inhaber/import:
+    get:
+      tags: [Inhaber]
+      summary: CSV-Spalten der Branche und letzter Bericht
+      responses:
+        "200":
+          description: Vorlage und Bericht
+    post:
+      tags: [Inhaber]
+      summary: CSV importieren
+      responses:
+        "200":
+          description: Gültige Zeilen übernommen
+  /api/v1/inhaber/csv-vorlage:
+    get:
+      tags: [Inhaber]
+      summary: CSV-Datei herunterladen
+      responses:
+        "200":
+          description: CSV
+  /api/openapi:
+    get:
+      summary: Dieses Dokument
+      responses:
+        "200":
+          description: OpenAPI als YAML

@@ -1,8 +1,13 @@
-import { saveProduct } from "@/server/owner-actions";
-import type { IndustryModule } from "@/lib/industries/types";
-import { readAttributes } from "@/lib/industries/types";
-import { minorToInput } from "@/lib/money";
 import { VariantFields } from "./variant-fields";
+import { minorToInput } from "@/ui/format";
+
+type Field = {
+  key: string;
+  label: string;
+  type: "text" | "boolean" | "select" | "tokens";
+  required: boolean;
+  options?: { value: string; label: string }[];
+};
 
 type ProductInput = {
   id: string;
@@ -10,14 +15,20 @@ type ProductInput = {
   description: string;
   categoryKey: string;
   axisLabel: string | null;
-  attributes: unknown;
+  attributes: Record<string, string | boolean | string[]>;
   variants: { id: string; label: string; priceCents: number; stock: number }[];
 };
 
-export function ProductForm({ industry, product }: { industry: IndustryModule; product?: ProductInput }) {
-  const attributes = readAttributes(product?.attributes);
+export function ProductForm({
+  industry,
+  product,
+}: {
+  industry: { label: string; categories: { key: string; label: string }[]; fields: Field[] };
+  product?: ProductInput | null;
+}) {
+  const attributes = product?.attributes ?? {};
   return (
-    <form className="stack" action={saveProduct}>
+    <form className="stack" action="/api/v1/inhaber/produkte" method="post">
       {product ? <input type="hidden" name="productId" value={product.id} /> : null}
       <label>
         Name
@@ -68,6 +79,20 @@ export function ProductForm({ industry, product }: { industry: IndustryModule; p
                     ))}
                   </select>
                 </label>
+              );
+            }
+            if (field.type === "tokens") {
+              const chosen = Array.isArray(current) ? current : [];
+              return (
+                <fieldset key={field.key}>
+                  <legend>{field.label}</legend>
+                  {(field.options ?? []).map((option) => (
+                    <label className="check" key={option.value}>
+                      <input type="checkbox" name={`attr_${field.key}`} value={option.value} defaultChecked={chosen.includes(option.value)} />{" "}
+                      {option.label}
+                    </label>
+                  ))}
+                </fieldset>
               );
             }
             return (

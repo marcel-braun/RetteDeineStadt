@@ -33,7 +33,7 @@ Vier Rollen:
 - **Inhaber.** Pflegt Sortiment und Versandwege seines Mandanten.
 - **Admin.** Legt Mandanten an, gibt Läden frei, pflegt Provision, Auszahlungsrhythmus, Lieferzonen und Versandpreise, liest die Statistik.
 
-Der Admin legt jeden Mandanten an. Es gibt keine Selbstregistrierung von Läden.
+Der Admin legt Mandanten an. Ein Lieferant kann seinen Laden selbst anmelden. Der Laden wartet dann auf die Freigabe durch den Admin und ist bis dahin für Käufer unsichtbar. Ein Kunde kann ein Konto anlegen. Der Kauf bleibt auch ohne Konto möglich.
 
 ---
 
@@ -45,8 +45,8 @@ Der erste Stand ist eine Pilotregion. Der Kauf ist echt: von der Entdeckung auf 
 
 Kaufweg:
 
-1. Der Käufer sieht die Läden der Pilotregion auf der Karte und grenzt sie über einen Umkreis ein.
-2. Er filtert nach Entfernung und Lieferzone. Branchenfilter erscheinen nur dort, wo die Branche sie mitbringt.
+1. Der Käufer sucht über eine sichtbare Suche nach Laden- und Produktnamen und sieht die Läden der Pilotregion auf der Karte.
+2. Er grenzt über den Umkreis und die Lieferzone ein. Branchenfilter erscheinen nur dort, wo die Branche sie mitbringt.
 3. Er legt Waren aus einem oder mehreren Läden in einen Warenkorb.
 4. Der Warenkorb nennt den günstigsten Versandweg, den alle beteiligten Läden können, und eine Versandgebühr. Bei Abholung entfällt die Gebühr.
 5. Der Käufer gibt seine E-Mail an und zahlt an die Plattform. Ein Konto ist dafür nicht nötig.
@@ -74,7 +74,18 @@ Diese Branchen sind im Pilot enthalten:
 - Drogerie und Haushalt
 - Fertiggerichte und Imbiss
 
-Weitere Branchen kommen über das Branchenmodell dazu. Kategorien, Pflichtfelder und Suchfilter bringt die jeweilige Branche mit. Allergene und Kühlung sind Beispiele für solche Filter. Welche Pilotbranche welchen Filter bekommt, steht in Kapitel 17.
+Weitere Branchen kommen über das Branchenmodell dazu. Kategorien, Pflichtfelder und Suchfilter bringt die jeweilige Branche mit. Die Pilotbranchen liefern diese Filter:
+
+- Lebensmittel und Hofladen: Bio, regional, Allergene
+- Bäckerei: Art
+- Metzgerei: Tierart
+- Getränke: Gebinde
+- Blumen und Pflanzen: Anlass
+- Handwerk und Geschenke: Material
+- Drogerie und Haushalt: Anwendungsbereich
+- Fertiggerichte und Imbiss: Ernährung
+
+Produkte führen keine Breite und keine Länge.
 
 ---
 
@@ -82,11 +93,11 @@ Weitere Branchen kommen über das Branchenmodell dazu. Kategorien, Pflichtfelder
 
 Festgelegt.
 
-Die Entdeckung läuft über die Karte und einen Umkreis. Der Käufer setzt einen Mittelpunkt. Angezeigt werden die Läden in diesem Umkreis. Die Entfernung des Umkreises ist in Kilometern.
+Die Entdeckung läuft über eine Suche, die Karte und einen Umkreis. Die Suche trifft Laden- und Produktnamen. Der Käufer setzt einen Mittelpunkt. Angezeigt werden die Läden in diesem Umkreis. Die Entfernung des Umkreises ist in Kilometern.
 
-Die Suche filtert nach Entfernung und nach Lieferzone. Die Entfernung ist in Kilometern.
+Zusätzlich filtert die Suche nach Entfernung und nach Lieferzone.
 
-Branchenfilter erscheinen nur bei einer Branche, die solche Filter definiert. Beispiele sind Allergene und Kühlung.
+Branchenfilter erscheinen nur bei einer Branche, die solche Filter definiert. Die Suche fragt das Branchenmodul und kennt keine Sonderfälle je Branche. Die konkreten Filter der Pilotbranchen stehen in Kapitel 4.
 
 ---
 
@@ -163,6 +174,8 @@ Der Kauf braucht eine E-Mail und kein Konto. Das ist der Gastkauf.
 
 Ein Konto ist freiwillig. Es dient dem Bestellverlauf. Der Kaufweg kommt ohne Konto aus.
 
+Die Startseite wirbt für zwei Wege. Der Kunde registriert ein Konto. Der Lieferant meldet einen Laden an, der auf die Freigabe durch den Admin wartet. Beide Wege führen in ein kurzes Formular.
+
 ---
 
 ## 10. Sortiment
@@ -174,6 +187,8 @@ Der Inhaber pflegt das Sortiment auf zwei Wegen: im Formular und per CSV. Beide 
 Die Spalten kommen von der Branche des Ladens. Formular und CSV einer Bäckerei fragen andere Pflichtfelder ab als Formular und CSV von Handwerk und Geschenke. Die Pflichtfelder liefert die Branche, siehe Kapitel 13.
 
 Ein Produkt kann Varianten entlang genau einer Achse führen, zum Beispiel Größe oder Gewicht. Jede Variante hat einen eigenen Preis und einen eigenen Bestand. Mehrere Achsen gleichzeitig sind nicht Teil des Pilots.
+
+Breite und Länge gehören nicht zu den Produktdaten. Sie stehen nicht im Formular, nicht in der CSV, nicht in den Filtern und nicht im Seed der Produkte.
 
 ---
 
@@ -219,7 +234,7 @@ Jede Branche ist eine eigene Einheit und bringt drei Dinge mit:
 - ihre Pflichtfelder für Formular und CSV
 - ihre Suchfilter
 
-Die Anbindung läuft über Interfaces und Abstraktion. Der Kern ruft die Branche auf. Die Branche liefert Kategorien, Felder und Filter. Entdeckung, Warenkorb, Zahlung und Auszahlung bleiben davon unberührt.
+Die Anbindung läuft über Interfaces und Abstraktion. Der Kern ruft die Branche auf. Die Branche liefert Kategorien, Felder und Filter. Die Suche zeigt einen Filter nur, wenn das Modul ihn liefert, und wertet ihn über dasselbe Modul aus. Entdeckung, Warenkorb, Zahlung und Auszahlung bleiben davon unberührt.
 
 Eine neue Branche bedeutet: eine weitere Einheit, die diese drei Dinge liefert. Kein Eingriff in den Kaufweg, die Splittung oder die Auszahlung.
 
@@ -244,10 +259,12 @@ Für den Inhaber ist die Pflege so einfach wie möglich. Er tut zwei Dinge: das 
 
 Festgelegt. Das ist der technische Vorschlag für die Umsetzung. Ein Vergleich mit anderen Stapeln gehört nicht hierher.
 
-Vier Bausteine:
+Sechs Bausteine:
 
 - **TypeScript.** Eine typisierte Sprache für die Käuferflächen, das Formular des Inhabers, den Admin und die Interfaces der Branchen. Die Pflichtfelder einer Branche bleiben an der Branche prüfbar.
-- **Next.js.** Eine Anwendung für Entdeckung, Kasse, Inhaberpflege und Admin. Der Kaufweg von der Karte bis zur Zahlung bleibt in einem System.
+- **HTTP-API.** Auth, Katalog, Suche, Warenkorb, Bestellung, Admin und Inhaberpflege liegen hinter einer HTTP-API. Dieselbe API ist das Backend für die Weboberfläche, für Android und für iOS. Die Beschreibung steht als OpenAPI bereit. Die Oberfläche spricht nur diese API an.
+- **Kern und Layout.** Domäne, API und Datenmodell importieren keine Oberfläche. Das Layout ist Darstellung.
+- **Next.js.** Eine Anwendung für Entdeckung, Kasse, Inhaberpflege, Admin und die API. Der Kaufweg von der Karte bis zur Zahlung bleibt in einem System.
 - **Postgres.** Mandanten, Sortiment, Bestände, Bestellungen, Lieferzonen, Versandpreise und Auszahlungsbeträge liegen transaktional in Postgres. Die branchenspezifischen Felder validiert die jeweilige Branche.
 - **Stripe Connect.** Die Plattform kassiert. Je Mandant hängt ein verbundenes Konto am Geschäftskonto. Connect zahlt je Laden den Warenwert abzüglich Provision aus. Der eine Warenkorb mit mehreren Läden ist der Grund für Connect: eine Zahlung des Käufers, Aufteilung auf mehrere Mandanten.
 
@@ -332,6 +349,5 @@ Nicht ausgestaltet. Die ersten beiden Punkte bleiben auf Wunsch offen. Die übri
 7. Der Zuschnitt einer Lieferzone und die konkreten Preise der Pilotregion.
 8. Was gilt, wenn die Läden im Warenkorb keinen gemeinsamen bepreisten Weg haben, und ob Abholung und ein bepreister Weg in demselben Warenkorb mischbar sind.
 9. Storno, Teilausfall eines Ladens und Retoure.
-10. Welche Suchfilter die einzelnen Pilotbranchen konkret mitbringen. Allergene und Kühlung bleiben Beispiele.
-11. Welche Zahlarten im Pilot an sind.
-12. Rechtstexte der Plattform: Impressum, Datenschutz, AGB.
+10. Welche Zahlarten im Pilot an sind.
+11. Rechtstexte der Plattform: Impressum, Datenschutz, AGB.

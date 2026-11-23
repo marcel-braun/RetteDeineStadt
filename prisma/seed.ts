@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient, type FulfillmentMethod, type PayoutCadence } from "@prisma/client";
-import { findIndustry } from "../src/lib/industries/registry";
-import type { Attributes } from "../src/lib/industries/types";
-import { hashPassword } from "../src/lib/password";
-import { makeSku } from "../src/lib/text";
+import { findIndustry } from "../src/core/industries/registry";
+import type { Attributes } from "../src/core/industries/types";
+import { hashPassword } from "../src/core/password";
+import { makeSku } from "../src/core/text";
 
 const prisma = new PrismaClient();
 const ownerPassword = hashPassword("pilot-inhaber");
@@ -67,7 +67,7 @@ const shops: ShopSeed[] = [
         description: "Vom Stall hinter der Scheune, ungewaschen.",
         categoryKey: "milch-ei",
         axisLabel: "Packung",
-        attributes: { herkunft: "eigener Stall", einheit: "Stück", gekuehlt: true },
+        attributes: { herkunft: "eigener Stall", einheit: "Stück", bio: true, regional: true, allergene: ["ei"] },
         variants: [
           { label: "6 Stück", priceCents: 280, stock: 40 },
           { label: "10 Stück", priceCents: 420, stock: 24 },
@@ -78,7 +78,7 @@ const shops: ShopSeed[] = [
         name: "Kartoffeln festkochend",
         description: "Vorige Woche gerodet.",
         categoryKey: "gemuese",
-        attributes: { herkunft: "Acker am Ort", einheit: "2 kg", gekuehlt: false },
+        attributes: { herkunft: "Acker am Ort", einheit: "2 kg", bio: true, regional: true },
         variants: [{ label: "2 kg", priceCents: 340, stock: 30 }],
       },
     ],
@@ -111,7 +111,7 @@ const shops: ShopSeed[] = [
         name: "Roggenbrot",
         description: "Sauerteig, ein Laib.",
         categoryKey: "brot",
-        attributes: { gewicht: "1 kg", hefefrei: false },
+        attributes: { gewicht: "1 kg", art: "sauerteig" },
         variants: [{ label: "Laib", priceCents: 420, stock: 18 }],
       },
       {
@@ -119,7 +119,7 @@ const shops: ShopSeed[] = [
         name: "Haferfladen",
         description: "Ohne Hefe, aus dem Nachmittagsofen.",
         categoryKey: "kleingebaeck",
-        attributes: { gewicht: "80 g", hefefrei: true },
+        attributes: { gewicht: "80 g", art: "muerbe" },
         variants: [{ label: "Stück", priceCents: 180, stock: 30 }],
       },
     ],
@@ -155,7 +155,7 @@ const shops: ShopSeed[] = [
         description: "Im Naturdarm, grob.",
         categoryKey: "wurst",
         axisLabel: "Gewicht",
-        attributes: { tierart: "gemischt", gekuehlt: true },
+        attributes: { tierart: "gemischt" },
         variants: [
           { label: "200 g", priceCents: 450, stock: 20 },
           { label: "400 g", priceCents: 800, stock: 16 },
@@ -166,7 +166,7 @@ const shops: ShopSeed[] = [
         name: "Sonntagsbraten",
         description: "Rind, am Stück, zum Braten.",
         categoryKey: "frischfleisch",
-        attributes: { tierart: "rind", gekuehlt: true },
+        attributes: { tierart: "rind" },
         variants: [{ label: "Standard", priceCents: 4000, stock: 8 }],
       },
     ],
@@ -200,7 +200,7 @@ const shops: ShopSeed[] = [
         description: "Naturtrüb, aus der letzten Lese.",
         categoryKey: "saft",
         axisLabel: "Flasche",
-        attributes: { inhalt: "Glasflasche", alkoholfrei: true },
+        attributes: { inhalt: "Glasflasche", gebinde: "flasche" },
         variants: [
           { label: "0,75 l", priceCents: 240, stock: 24 },
           { label: "1 l", priceCents: 310, stock: 18 },
@@ -211,7 +211,7 @@ const shops: ShopSeed[] = [
         name: "Helles",
         description: "Unfiltriert.",
         categoryKey: "wein-bier",
-        attributes: { inhalt: "0,5 l", alkoholfrei: false },
+        attributes: { inhalt: "0,5 l", gebinde: "flasche" },
         variants: [{ label: "Flasche", priceCents: 180, stock: 40 }],
       },
     ],
@@ -245,7 +245,7 @@ const shops: ShopSeed[] = [
         name: "Wiesenstrauß",
         description: "Was gerade blüht.",
         categoryKey: "straeusse",
-        attributes: { haltbarkeit: "etwa 4 Tage", saison: true },
+        attributes: { haltbarkeit: "etwa 4 Tage", anlass: "alltag" },
         variants: [{ label: "Strauß", priceCents: 1450, stock: 10 }],
       },
       {
@@ -253,7 +253,7 @@ const shops: ShopSeed[] = [
         name: "Rosmarin im Topf",
         description: "Für die Fensterbank.",
         categoryKey: "topf",
-        attributes: { haltbarkeit: "mehrere Monate", saison: false },
+        attributes: { haltbarkeit: "mehrere Monate", anlass: "alltag" },
         variants: [{ label: "Topf", priceCents: 650, stock: 14 }],
       },
     ],
@@ -288,7 +288,7 @@ const shops: ShopSeed[] = [
         description: "Steinzeug, gespült.",
         categoryKey: "keramik",
         axisLabel: "Glasur",
-        attributes: { material: "Steinzeug", unikat: true },
+        attributes: { material: "keramik" },
         variants: [
           { label: "Blau", priceCents: 2200, stock: 6 },
           { label: "Sand", priceCents: 2200, stock: 6 },
@@ -299,7 +299,7 @@ const shops: ShopSeed[] = [
         name: "Leinenbeutel",
         description: "Genäht, ungefärbt.",
         categoryKey: "textil",
-        attributes: { material: "Leinen", unikat: false },
+        attributes: { material: "textil" },
         variants: [{ label: "Stück", priceCents: 1800, stock: 12 }],
       },
     ],
@@ -326,7 +326,7 @@ const shops: ShopSeed[] = [
         name: "Kernseife",
         description: "Olivenöl, zum Waschen.",
         categoryKey: "koerper",
-        attributes: { inhalt: "100 g", inhaltsstoffe: "Olivenöl, Lauge", nachfuellbar: false },
+        attributes: { inhalt: "100 g", inhaltsstoffe: "Olivenöl, Lauge", anwendungsbereich: "koerper" },
         variants: [{ label: "Stück", priceCents: 350, stock: 20 }],
       },
       {
@@ -334,7 +334,7 @@ const shops: ShopSeed[] = [
         name: "Waschsoda",
         description: "Zum Nachfüllen in die eigene Dose.",
         categoryKey: "waschen",
-        attributes: { inhalt: "500 g", inhaltsstoffe: "Natriumcarbonat", nachfuellbar: true },
+        attributes: { inhalt: "500 g", inhaltsstoffe: "Natriumcarbonat", anwendungsbereich: "waschen" },
         variants: [{ label: "Beutel", priceCents: 280, stock: 15 }],
       },
     ],
@@ -366,7 +366,7 @@ const shops: ShopSeed[] = [
         name: "Linseneintopf",
         description: "Mit Sellerie, warm in der Schale.",
         categoryKey: "eintoepfe",
-        attributes: { allergene: "Sellerie", warm: true },
+        attributes: { ernaehrung: "vegetarisch" },
         variants: [{ label: "Portion", priceCents: 650, stock: 20 }],
       },
       {
@@ -374,7 +374,7 @@ const shops: ShopSeed[] = [
         name: "Apfelkuchen",
         description: "Ein Stück vom Blech.",
         categoryKey: "suesses",
-        attributes: { allergene: "Gluten, Ei", warm: false },
+        attributes: { ernaehrung: "vegetarisch" },
         variants: [{ label: "Stück", priceCents: 320, stock: 12 }],
       },
     ],
@@ -426,9 +426,20 @@ async function main() {
   });
 
   for (const shop of shops) {
-    if (await prisma.tenant.findUnique({ where: { slug: shop.slug } })) continue;
     const industry = findIndustry(shop.industryKey);
     if (!industry) throw new Error(`Branche fehlt: ${shop.industryKey}`);
+    const existingTenant = await prisma.tenant.findUnique({ where: { slug: shop.slug } });
+    if (existingTenant) {
+      for (const product of shop.products) {
+        const checked = industry.validate(product.attributes);
+        if (!checked.ok) throw new Error(`${shop.slug}/${product.importKey}: ${checked.errors.join(" ")}`);
+        await prisma.product.updateMany({
+          where: { tenantId: existingTenant.id, importKey: product.importKey },
+          data: { attributes: checked.value as Prisma.InputJsonValue },
+        });
+      }
+      continue;
+    }
     const owner = await prisma.user.upsert({
       where: { email: shop.email },
       update: {},

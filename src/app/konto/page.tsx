@@ -1,37 +1,31 @@
 import Link from "next/link";
-import { currentUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { METHOD_LABEL } from "@/lib/fulfillment";
-import { formatEuro } from "@/lib/money";
-import { formatWhen } from "@/lib/text";
+import { apiGet } from "@/ui/api";
+import { formatEuro, formatWhen } from "@/ui/format";
 
 export const metadata = { title: "Konto" };
 
+type Account = { user: { name: string; email: string } | null; orders: { number: string; when: string; method: string; totalCents: number }[] };
+
 export default async function AccountPage() {
-  const user = await currentUser();
-  if (!user) {
+  const account = await apiGet<Account>("/api/v1/konto");
+  if (!account.user) {
     return (
       <section className="stack">
         <h1>Konto</h1>
         <p>Ein Konto ist freiwillig. Gastbestellungen mit derselben E-Mail erscheinen hier, sobald das Konto angelegt ist.</p>
-        <Link className="button" href="/anmelden?next=/konto">
-          Anmelden oder Konto anlegen
-        </Link>
+        <Link className="button" href="/anmelden?next=/konto">Anmelden</Link>
       </section>
     );
   }
-  const orders = await prisma.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
   return (
     <section className="stack">
-      <h1>Hallo {user.name}</h1>
-      <p className="quiet">{user.email}</p>
-      {orders.length === 0 ? <p>Noch keine Bestellung auf diesem Konto.</p> : null}
-      {orders.map((order) => (
-        <Link className="paper shop-card" key={order.id} href={`/bestellung/${order.number}`}>
+      <h1>Hallo {account.user.name}</h1>
+      <p className="quiet">{account.user.email}</p>
+      {account.orders.length === 0 ? <p>Noch keine Bestellung auf diesem Konto.</p> : null}
+      {account.orders.map((order) => (
+        <Link className="paper shop-card" key={order.number} href={`/bestellung/${order.number}`}>
           <strong>{order.number}</strong>
-          <div className="meta">
-            {formatWhen(order.createdAt)} · {METHOD_LABEL[order.method]} · {formatEuro(order.totalCents)}
-          </div>
+          <div className="meta">{formatWhen(order.when)} · {order.method} · {formatEuro(order.totalCents)}</div>
         </Link>
       ))}
     </section>
