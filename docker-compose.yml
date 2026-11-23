@@ -1,0 +1,39 @@
+name: rettedeinestadt
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: rette
+      POSTGRES_PASSWORD: rette
+      POSTGRES_DB: rettedeinestadt
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rette -d rettedeinestadt"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://rette:rette@db:5432/rettedeinestadt
+      SESSION_SECRET: pilot-session-nicht-fuer-produktion
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+volumes:
+  pgdata:

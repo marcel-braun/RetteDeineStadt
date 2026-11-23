@@ -1,0 +1,148 @@
+:root {
+  --bg: #f4ead8;
+  --paper: #fffaf2;
+  --ink: #241c16;
+  --muted: #6a5848;
+  --line: #e4d3ba;
+  --green: #244e3a;
+  --green-soft: #e5f0e8;
+  --clay: #8c4a32;
+  --bad: #8a3d32;
+  --bad-soft: #f8ece8;
+  --ok: #244e3a;
+  --shadow: 0 10px 30px rgba(70, 42, 18, 0.06);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 32rem),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+a { color: inherit; }
+a:hover { color: var(--green); }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: Georgia, "Iowan Old Style", Palatino, serif; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 4vw, 3rem); margin: 0 0 0.4rem; }
+h2 { font-size: 1.45rem; margin: 0 0 0.6rem; }
+h3 { font-size: 1.15rem; margin: 0 0 0.35rem; }
+p { margin: 0 0 0.8rem; }
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  background: var(--ink);
+  color: white;
+  padding: 0.4rem 0.7rem;
+}
+.skip:focus { top: 0.5rem; }
+
+.wrap { width: min(1120px, calc(100% - 2.4rem)); margin: 0 auto; }
+.site-header, .site-footer { border-bottom: 1px solid var(--line); }
+.site-footer { border-bottom: 0; border-top: 1px solid var(--line); padding: 1.4rem 0 2rem; color: var(--muted); font-size: 0.92rem; }
+.header-row, .nav-row { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+.header-row { padding: 1rem 0 0.4rem; }
+.nav-row { padding: 0.2rem 0 0.9rem; flex-wrap: wrap; }
+.wordmark { text-decoration: none; font-family: Georgia, Palatino, serif; font-size: 1.45rem; }
+.nav { display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: center; }
+.nav a, .text-button { text-decoration: none; }
+.quiet { color: var(--muted); }
+.lede { max-width: 42rem; color: var(--muted); font-size: 1.08rem; }
+
+main { padding: 1.8rem 0 4rem; }
+.narrow { max-width: 38rem; }
+.landing { display: grid; gap: 1.6rem; }
+.hero { padding: 1.2rem 0 0.4rem; max-width: 40rem; }
+.paths { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.path { display: grid; gap: 0.7rem; align-content: start; min-height: 16rem; padding: 1.4rem; }
+button.clay, .button.clay { background: var(--clay); }
+.search-panel { padding: 1.2rem; }
+.search-label { font-size: 1rem; }
+.search-input { font-size: 1.2rem; padding: 0.8rem 0.9rem; border-radius: 14px; background: #fff; }
+.stack { display: grid; gap: 1rem; }
+.row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.split { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.2rem; align-items: start; }
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem 1.05rem;
+  box-shadow: var(--shadow);
+}
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; align-items: end; }
+label { display: grid; gap: 0.28rem; font-size: 0.92rem; }
+label.check { display: flex; gap: 0.55rem; align-items: flex-start; }
+label.check input { margin-top: 0.35rem; }
+input, select, textarea {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.48rem 0.6rem;
+}
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"] {
+  width: auto;
+  padding: 0;
+  accent-color: var(--green);
+}
+textarea { min-height: 7rem; resize: vertical; }
+button, .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: white;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.52rem 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+button.secondary, .button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+.notice { border-radius: 12px; padding: 0.7rem 0.85rem; }
+.notice.ok { background: var(--green-soft); }
+.notice.bad { background: var(--bad-soft); color: var(--bad); }
+.map-frame { padding: 0.6rem; }
+.map-frame svg { width: 100%; height: auto; display: block; border-radius: 12px; background: #e5efe8; }
+.map-caption { margin: 0.55rem 0.2rem 0; color: var(--muted); font-size: 0.88rem; }
+.shop-list { display: grid; gap: 0.7rem; }
+.shop-card { display: block; text-decoration: none; }
+.shop-card:hover { border-color: #c9d7ce; }
+.meta { color: var(--muted); font-size: 0.92rem; }
+.kicker { color: var(--green); font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; }
+dl.facts { display: grid; grid-template-columns: 9rem 1fr; gap: 0.35rem 0.8rem; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+.story { max-width: 40rem; }
+.hours { white-space: pre-line; }
+.product { display: grid; gap: 0.7rem; }
+.variant-row, .price-row { display: grid; grid-template-columns: 1.3fr 0.7fr 0.6fr auto; gap: 0.6rem; align-items: end; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.45rem 0.35rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 0.88rem; }
+.total td { font-weight: 650; }
+.badge { display: inline-block; border-radius: 999px; padding: 0.1rem 0.5rem; background: var(--green-soft); font-size: 0.82rem; }
+.badge.wait { background: #f3ead6; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0; padding: 0.8rem; }
+legend { padding: 0 0.3rem; }
+pre.sample { overflow: auto; background: #f7f4ee; padding: 0.8rem; border-radius: 10px; font-size: 0.86rem; }
+
+@media (max-width: 860px) {
+  .split, .filters, .two, .paths, .variant-row, .price-row, dl.facts { grid-template-columns: 1fr; }
+  .header-row { align-items: flex-start; flex-direction: column; }
+}
